@@ -1,0 +1,25 @@
+---
+feature_name: Web Bluetooth / Heart Rate
+chrome_version: 45
+check_min_version: true
+feature_id: 5264933985976320
+icon_url: icon.png
+index: index.html
+---
+
+<button>Get Bluetooth Device's Heart Rate</button>
+
+{% include output_helper.html %}
+
+{% include js_snippet.html filename='heart-rate.js' %}
+
+<script>
+  document.querySelector('button').addEventListener('click', function() {
+    if (isWebBluetoothEnabled()) {
+      ChromeSamples.clearLog();
+      onButtonClick();
+    }
+  });
+</script>
+
+{% include_relative _includes/utils.html %}
