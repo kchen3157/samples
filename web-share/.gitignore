@@ -1,7 +1,0 @@
-.DS_Store
-.firebase
-.firebaserc
-.netlify
-*.log
-dist
-node_modules
