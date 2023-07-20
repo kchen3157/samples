@@ -34,28 +34,33 @@ function onButtonClick() {
     return service.getCharacteristic(heartRateMeasurementCharacteristicUUID);
   })
   .then(characteristic => {
-    log('Reading Heart Rate...');
+    log('Starting Notifications...');
     return characteristic.startNotifications();
   })
   .then(characteristic => {
-    let value = characteristic.readValue();
-    log(value);
+    log('Adding Event Listener...')
+    return characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
   })
-  // .then(value => {
-  //   let heartRate = value.getUint8(0);
-  //   log('> Heart Rate is ' + heartRate + ' BPM');
-  // })
   .catch(error => {
     log('Argh! ' + error);
   });
+
 }
 
-function parseHeartRate(value) {
-  value = value.buffer ? value : new DataView(value);
+function handleCharacteristicValueChanged(event) {
+  const value = event.target.value
+  log('Received ' + value);
+
+  // Received as a DataView Object
+  // value = value.buffer ? value : new DataView(value);
+
+  //read flags at first byte
   let flags = value.getUint8(0);
   let rate16Bits = flags & 0x1;
+  
   let result = {};
   let index = 1;
+
   if (rate16Bits) {
     result.heartRate = value.getUint16(index, /*littleEndian=*/true);
     index += 2;
@@ -81,5 +86,6 @@ function parseHeartRate(value) {
     }
     result.rrIntervals = rrIntervals;
   }
+  log(result)
   return result;
 }
