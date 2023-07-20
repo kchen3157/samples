@@ -49,43 +49,43 @@ function onButtonClick() {
 
 function handleCharacteristicValueChanged(event) {
   const value = event.target.value
-  log('Received ' + value);
 
-  // Received as a DataView Object
-  // value = value.buffer ? value : new DataView(value);
-
-  //read flags at first byte
+  // Read flags at first byte
   let flags = value.getUint8(0);
-  let rate16Bits = flags & 0x1;
+  let heartRateFormatUint16 = !!(flags & 0x1);
+  let sensorContactStatus = !!(flags & 0x2); // Skin contact
+  let sensorContactSupport = !!(flags & 0x4);
+  let energyExpendedStatus = !!(flags & 0x8); // Energy Expended field present
+  let rrIntervalStatus = !!(flags & 0x10); // RR Intervals present
   
   let result = {};
   let index = 1;
 
-  if (rate16Bits) {
-    result.heartRate = value.getUint16(index, /*littleEndian=*/true);
+  // Get HR value
+  if (heartRateFormatUint16) {
+    result.heartRate = value.getUint16(index, littleEndian = true);
     index += 2;
   } else {
     result.heartRate = value.getUint8(index);
     index += 1;
   }
-  let contactDetected = flags & 0x2;
-  let contactSensorPresent = flags & 0x4;
-  if (contactSensorPresent) {
-    result.contactDetected = !!contactDetected;
+
+  // Get sensor info
+  if (sensorContactSupport) {
+    result.sensorContactStatus = sensorContactStatus;
   }
-  let energyPresent = flags & 0x8;
-  if (energyPresent) {
-    result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
+  if (energyExpendedStatus) {
+    result.energyExpended = value.getUint16(index, littleEndian = true);
     index += 2;
   }
-  let rrIntervalPresent = flags & 0x10;
-  if (rrIntervalPresent) {
+  if (rrIntervalStatus) {
     let rrIntervals = [];
     for (; index + 1 < value.byteLength; index += 2) {
-      rrIntervals.push(value.getUint16(index, /*littleEndian=*/true));
+      rrIntervals.push(value.getUint16(index, littleEndian = true));
     }
     result.rrIntervals = rrIntervals;
   }
+
   log(result)
   return result;
 }
